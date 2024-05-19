@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
-from llms.openai.model import ImageGenerator
+import json
+from src.image.model import ImageGenerator
+from src.text.model import TextGenerator
 
 app = Flask("project-onnecta")
 
@@ -22,4 +24,16 @@ async def generate_image():
     return jsonify({
         "status": "Successful",
         "image_url": response
+    })
+
+@app.route("/generate-text", methods=["POST"])
+async def generate_text():
+    data = request.get_json()
+    prompt = data.get("prompt")
+    textgen = TextGenerator()
+    response = await textgen.generate(prompt=prompt)
+    parsed_response = json.loads(response)
+    return jsonify({
+        "status": "Successful",
+        "output": parsed_response
     })

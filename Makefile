@@ -4,7 +4,7 @@ ifneq (,$(wildcard ./.env))
 endif
 
 # Define image name and tag
-IMAGE_NAME := project-onnecta
+IMAGE_NAME := onnecta-llm-service
 TAG := latest
 
 build:
