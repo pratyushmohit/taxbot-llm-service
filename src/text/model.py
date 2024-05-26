@@ -7,7 +7,7 @@ dotenv.load_dotenv(dotenv_path)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-client = AsyncOpenAI(api_key=OPENAI_API_KEY)
+client = AsyncOpenAI(api_key="sk-proj-SrTmNyfMh1ICu1GVkbYPT3BlbkFJfjD1yPZJRaJrEqLirbme")
 
 
 class TextGenerator:
