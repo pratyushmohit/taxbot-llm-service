@@ -1,4 +1,4 @@
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 import os
 import dotenv
 
@@ -7,7 +7,7 @@ dotenv.load_dotenv(dotenv_path)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-client = AsyncOpenAI(api_key="sk-proj-SrTmNyfMh1ICu1GVkbYPT3BlbkFJfjD1yPZJRaJrEqLirbme")
+client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 class TextGenerator:
@@ -24,3 +24,15 @@ class TextGenerator:
         )
         output = response.choices[0].message.content
         return output
+
+    def generate_stream(self, prompt, model="gpt-4"):
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        stream = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            stream=True
+        )
+        return stream
