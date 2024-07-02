@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional
+from typing import Optional, List
 import uuid
 
 
@@ -26,5 +26,12 @@ class ChatModel(BaseModel):
         }
 
 
+class ChatHistoryItem(BaseModel):
+    content: str
+    role: str
+
+
 class ChatResponse(BaseModel):
-    pass
+    output: str
+    status: str
+    chat_history: List[ChatHistoryItem]

@@ -1,10 +1,9 @@
-import asyncio
 import logging
 
 from flask import Flask, jsonify, request
 from pydantic import ValidationError
 
-from app.model import ChatModel
+from app.model import ChatModel, ChatResponse
 from src.llms.langchain import TaxBot
 from src.llms.openai import TextGenerator
 
@@ -12,6 +11,7 @@ app = Flask("project-onnecta")
 
 # Set logging level to INFO
 logging.basicConfig(level=logging.INFO)
+logging.getLogger('werkzeug').setLevel(logging.WARNING)
 
 @app.route("/", methods=["GET"])
 def index():
@@ -42,7 +42,7 @@ async def generate_text():
 
 
 @app.route("/conversational-chat", methods=["POST"])
-def conversational_chat():
+async def conversational_chat() -> ChatResponse:
     logging.info('Received POST request')
     try:
         # Parse and validate the request JSON data against the Pydantic model
@@ -53,27 +53,10 @@ def conversational_chat():
 
     taxbot = TaxBot()
 
-    # Create a new event loop if one does not exist
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    response, chat_history = loop.run_until_complete(taxbot.generate(**data.model_dump()))
+    response, chat_history = await taxbot.generate(**data.model_dump())
 
     return jsonify({
         "status": "Successful",
         "output": response,
         "chat_history": chat_history
     })
-
-
-# @app.route("/stream", methods=["POST"])
-# def stream_text():
-#     data = request.json
-#     prompt = data.get("prompt")
-#     textgen = TextGenerator()
-
-#     def generate():
-#         for chunk in textgen.generate_stream(prompt=prompt):
-#             if chunk.choices[0].delta.content is not None:
-#                 yield f"{chunk.choices[0].delta.content}\n"
-
-#     return Response(stream_with_context(generate()), content_type='text/plain')
