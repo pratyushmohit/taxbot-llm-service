@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 from pydantic import ValidationError
 
 from app.model import ChatModel, ChatResponse
-from src.llms.langchain import TaxBot
+from src.llms.langchain import ConversationalBot
 from src.llms.openai import TextGenerator
 
 app = Flask("project-onnecta")
@@ -51,7 +51,7 @@ async def conversational_chat() -> ChatResponse:
         # Return validation errors as a JSON response
         return jsonify({"status": "Failed", "errors": e.errors()}), 400
 
-    taxbot = TaxBot()
+    taxbot = ConversationalBot()
 
     response, chat_history = await taxbot.generate(**data.model_dump())
 

@@ -34,7 +34,7 @@ with open(system_prompts_path, "r") as file:
     system_prompts = json.load(file)
 
 
-class TaxBot:
+class ConversationalBot:
     def __init__(self):
         self.prompt_template = ChatPromptTemplate.from_messages([
             ("system", system_prompts["1"]),
