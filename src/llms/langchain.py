@@ -8,8 +8,6 @@ from langchain.schema import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_mongodb.chat_message_histories import MongoDBChatMessageHistory
 from langchain_openai import ChatOpenAI
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
 
 # Load environment variables from .env file
 dotenv_path = os.path.join(os.getcwd(), ".env")
@@ -21,11 +19,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # MongoDB Atlas credentials
 DB_URI = os.getenv("MONGO_DB_URI")
 DB_NAME = os.getenv("MONGO_DB_NAME")
-
-# Create a new client and connect to the server
-client = MongoClient(DB_URI, server_api=ServerApi('1'))
-db = client.get_database(DB_NAME)
-
 
 system_prompts_path = os.path.join(
     os.getcwd(), "src", "prompt_templates", "system_prompts.json")
@@ -41,7 +34,8 @@ class ConversationalBot:
             ("human", "Previous message history: {history}"),
             ("human", "User's new question: {input}"),
         ])
-        self.llm = ChatOpenAI(api_key=OPENAI_API_KEY, model_name="gpt-4")
+        self.llm = ChatOpenAI(api_key=OPENAI_API_KEY,
+                              model_name="gpt-4", max_tokens=1500)
         self.chain = self.prompt_template | self.llm | StrOutputParser()
 
     async def is_tax_related(self, chat_history: MongoDBChatMessageHistory, prompt):
@@ -59,9 +53,10 @@ class ConversationalBot:
             response = await self.llm.agenerate(
                 messages=[[HumanMessage(content=classification_prompt)]]
             )
-            classification = response.generations[0][0].message.content.strip().lower()
+            classification = response.generations[0][0].message.content.strip(
+            ).lower()
             classification = classification.strip("'")
-            logging.info(f"Classification: {classification}")
+            logging.info(f"classification: {classification}")
             return classification == "tax-related"
 
         except Exception as e:
@@ -76,7 +71,6 @@ class ConversationalBot:
             database_name=DB_NAME,
             collection_name=f"session-{session_id}",
         )
-        # logging.info(f"Current chat history: {chat_history.messages}")
 
         is_tax_related = await self.is_tax_related(chat_history, prompt)
         logging.info(f"is_tax_related: {is_tax_related}")

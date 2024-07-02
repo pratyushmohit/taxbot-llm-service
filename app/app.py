@@ -11,7 +11,7 @@ app = Flask("project-onnecta")
 
 # Set logging level to INFO
 logging.basicConfig(level=logging.INFO)
-logging.getLogger('werkzeug').setLevel(logging.WARNING)
+
 
 @app.route("/", methods=["GET"])
 def index():
