@@ -7,6 +7,8 @@ from app.model import ChatModel, ChatResponse
 from src.llms.langchain import ConversationalBot
 from src.llms.openai import TextGenerator
 
+import httpx
+
 app = Flask("project-onnecta")
 
 # Set logging level to INFO
@@ -23,25 +25,25 @@ def status():
     return jsonify({"status": "Running"})
 
 
+# @app.route("/chat", methods=["POST"])
+# async def generate_text():
+#     logging.info('Received POST request')
+#     try:
+#         # Parse and validate the request JSON data against the Pydantic model
+#         data = ChatModel(**request.get_json())
+#     except ValidationError as e:
+#         # Return validation errors as a JSON response
+#         return jsonify({"status": "Failed", "errors": e.errors()}), 400
+
+#     textgen = TextGenerator()
+#     response = await textgen.generate(prompt=data.prompt)
+#     return jsonify({
+#         "status": "Successful",
+#         "output": response
+#     })
+
+
 @app.route("/chat", methods=["POST"])
-async def generate_text():
-    logging.info('Received POST request')
-    try:
-        # Parse and validate the request JSON data against the Pydantic model
-        data = ChatModel(**request.get_json())
-    except ValidationError as e:
-        # Return validation errors as a JSON response
-        return jsonify({"status": "Failed", "errors": e.errors()}), 400
-
-    textgen = TextGenerator()
-    response = await textgen.generate(prompt=data.prompt)
-    return jsonify({
-        "status": "Successful",
-        "output": response
-    })
-
-
-@app.route("/conversational-chat", methods=["POST"])
 async def conversational_chat() -> ChatResponse:
     logging.info('Received POST request')
     try:
