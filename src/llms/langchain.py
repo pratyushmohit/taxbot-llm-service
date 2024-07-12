@@ -37,7 +37,7 @@ class ConversationalBot:
             ("human", "User's new question: {input}"),
         ])
         self.llm = ChatOpenAI(api_key=OPENAI_API_KEY,
-                              model_name="gpt-4", max_tokens=1500)
+                              model_name="gpt-3.5-turbo", max_tokens=500)
         self.chain = self.prompt_template | self.llm | StrOutputParser()
 
     async def is_tax_related(self, chat_history: MongoDBChatMessageHistory, prompt, related_documents):
@@ -100,11 +100,16 @@ class ConversationalBot:
                 retrieve_context_data = retrieve_context_response.json()
 
                 # Extract and concatenate the content
-                related_documents = retrieve_context_data["output"]["documents"]
+                try:
+                    related_documents = retrieve_context_data["output"]["documents"]
 
-                # Since documents is a list of lists, we need to extract the content from the inner lists
-                related_documents = " ".join(
-                    [doc[0] for doc in related_documents])
+                    # Since documents is a list of lists, we need to extract the content from the inner lists
+                    related_documents = " ".join(
+                        [doc[0] for doc in related_documents])
+                except:
+                    related_documents = " ".join(
+                        [item["payload"]["content"] for item in retrieve_context_data["output"]])
+                    # need to standardize this format
 
             except ValueError as e:
                 logging.error(f"Error parsing JSON response: {e}")
