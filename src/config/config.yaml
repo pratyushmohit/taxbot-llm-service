@@ -1,0 +1,16 @@
+llm_config:
+  model: "gpt-4"               # Model name or ID
+  max_tokens: 1000             # Maximum number of tokens
+  temperature: 0.7             # Sampling temperature
+  top_p: 1.0                   # Nucleus sampling probability
+  n: 1                         # Number of completions to generate
+  stop: []                     # Sequence to stop generation
+  presence_penalty: 0.0        # Penalize new tokens based on their presence
+  frequency_penalty: 0.0       # Penalize new tokens based on their frequency
+  best_of: 1                   # Generates multiple completions server-side and returns the best
+  logit_bias: {}               # Modify the likelihood of specified tokens appearing in the completion
+  user: ""                     # User ID for tracking and rate-limiting purposes
+  stream: false                # Whether to stream back partial progress
+  echo: false                  # Echo back the prompt in addition to the completion
+  logprobs: null               # Include the log probabilities on the logprobs most likely tokens
+  stop_sequences: []           # Sequences where the API should stop generating further tokens

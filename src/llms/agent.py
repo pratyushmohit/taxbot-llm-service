@@ -1,28 +1,17 @@
 import logging
 import os
 
-import dotenv
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import AIMessage, HumanMessage
 from langchain_mongodb.chat_message_histories import MongoDBChatMessageHistory
 from langchain_openai import ChatOpenAI
 
-from src.llms.toolkit import ToolKit
-
-# Load environment variables from .env file
-dotenv_path = os.path.join(os.getcwd(), ".env")
-dotenv.load_dotenv(dotenv_path)
-
-# OpenAI Credentials
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-# MongoDB Atlas credentials
-DB_URI = os.getenv("MONGO_DB_URI")
-DB_NAME = os.getenv("MONGO_DB_NAME")
+from src.llms.toolkit import classify, retrieve_from_vector_database, search_with_tavily
+from utils.env_variables import EnvironmentVariables as env
 
 system_prompts_path = os.path.join(
-    os.getcwd(), "src", "prompt_templates", "system_prompts.md")
+    os.getcwd(), "src", "prompts", "system", "main.md")
 
 # Read the Markdown file
 with open(system_prompts_path, "r") as file:
@@ -31,16 +20,16 @@ with open(system_prompts_path, "r") as file:
 
 class ChatAgent:
     def __init__(self) -> None:
-        self.llm = ChatOpenAI(api_key=OPENAI_API_KEY, model_name="gpt-3.5-turbo", max_tokens=500)
+        self.llm = ChatOpenAI(api_key=env.OPENAI_API_KEY, model_name="gpt-3.5-turbo", max_tokens=500)
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", "Previous chat history: {history}"),
-            # ("human", "Related documents: {related_documents}"),
             ("human", "User's new question: {input}"),
             MessagesPlaceholder("agent_scratchpad"),
         ])
-        self.toolkit = [ToolKit.retrieve_from_vector_database,
-                        ToolKit.search_with_tavily]
+        self.toolkit = [classify,
+                        retrieve_from_vector_database,
+                        search_with_tavily]
         
         # Construct the OpenAI Tools agent
         self.agent = create_openai_tools_agent(self.llm, self.toolkit, self.prompt)
@@ -51,9 +40,9 @@ class ChatAgent:
     async def generate(self, session_id, prompt):
 
         chat_history = MongoDBChatMessageHistory(
-            connection_string=DB_URI,
+            connection_string=env.DB_URI,
             session_id=session_id,
-            database_name=DB_NAME,
+            database_name=env.DB_NAME,
             collection_name=f"session-{session_id}",
         )
 
