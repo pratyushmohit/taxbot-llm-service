@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onnecta-llm-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: onnecta-llm-service
+  template:
+    metadata:
+      labels:
+        app: onnecta-llm-service
+    spec:
+      containers:
+        - name: onnecta-llm-service
+          image: pratyushmohitk/onnecta:onnecta-llm-service
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: "0.5"  # Adjust CPU limit as needed
+              memory: "512Mi"  # Adjust memory limit as needed
+            requests:
+              cpu: "0.1"  # CPU request for scheduling
+              memory: "256Mi"  # Memory request for scheduling
+          # Add environment variables here if needed

@@ -6,11 +6,13 @@ from pydantic import ValidationError
 from app.model import ChatModel, ChatResponse
 from src.llms.agent import ChatAgent
 
+# Configure root logger
+logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(asctime)s - %(message)s')
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 app = Flask("onnecta-llm-service")
-
-# Set logging level to INFO
-logging.basicConfig(level=logging.INFO)
-
 
 @app.route("/", methods=["GET"])
 def index():
@@ -22,7 +24,7 @@ def status():
     return jsonify({"status": "Running"})
 
 
-@app.route("/chat-agent", methods=["POST"])
+@app.route("/chat", methods=["POST"])
 async def conversational_chat_agent() -> ChatResponse:
     logging.info('Received POST request')
     try:

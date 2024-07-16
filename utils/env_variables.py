@@ -1,6 +1,5 @@
 import logging
 import os
-from enum import Enum
 import dotenv
 
 # Load environment variables from .env file

@@ -1,14 +1,15 @@
-from pydantic import BaseModel, Field
-from typing import Type, Optional
-from langchain_core.tools import BaseTool
-from langchain_core.callbacks.manager import CallbackManagerForToolRun
-from langchain.tools import tool
-from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain_community.tools.tavily_search import TavilySearchResults
 import getpass
 import os
+from typing import Optional, Type
+
+from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.tools import tool
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_core.callbacks.manager import CallbackManagerForToolRun
+from langchain_core.tools import BaseTool
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
 
 os.environ["TAVILY_API_KEY"] = getpass.getpass()
 

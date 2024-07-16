@@ -11,5 +11,5 @@ build:
 	docker build -t $(IMAGE_NAME):$(TAG) -f Dockerfile .
 
 run:
-	docker run -dp 8000:8000 --name $(IMAGE_NAME) $(IMAGE_NAME):$(TAG)
+	docker run -dp 8000:8000 --name $(IMAGE_NAME) --env-file .env $(IMAGE_NAME):$(TAG)
 

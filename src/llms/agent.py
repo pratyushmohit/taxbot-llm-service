@@ -7,7 +7,8 @@ from langchain.schema import AIMessage, HumanMessage
 from langchain_mongodb.chat_message_histories import MongoDBChatMessageHistory
 from langchain_openai import ChatOpenAI
 
-from src.llms.toolkit import classify, retrieve_from_vector_database, search_with_tavily
+from src.llms.toolkit import (classify, retrieve_from_vector_database,
+                              search_with_tavily)
 from utils.env_variables import EnvironmentVariables as env
 
 system_prompts_path = os.path.join(
