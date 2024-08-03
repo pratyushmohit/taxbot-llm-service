@@ -1,85 +1,74 @@
-import getpass
-import os
-from typing import Optional, Type
+from typing import Literal
+from langchain_core.messages import AIMessage
+from langchain_core.tools import tool
 
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.tools import tool
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_core.callbacks.manager import CallbackManagerForToolRun
-from langchain_core.tools import BaseTool
+from langgraph.prebuilt import ToolNode
+from langgraph.graph import StateGraph, MessagesState
+from typing import Literal
+
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from langgraph.graph import StateGraph, MessagesState
+from langgraph.prebuilt import ToolNode
 
-os.environ["TAVILY_API_KEY"] = getpass.getpass()
-
-# class AddInput(BaseModel):
-#     a: int = Field(description="first number")
-#     b: int = Field(description="second number")
-
-# class AddTool(BaseTool):
-#     name = "add"
-#     description = "Adds two numbers together"
-#     args_schema: Type[BaseModel] = AddInput
-#     return_direct: bool = True
-
-#     def _run(
-#         self, a: int, b: int, run_manager: Optional[CallbackManagerForToolRun] = None
-#     ) -> str:
-#         return a + b
+OPENAI_API_KEY="sk-proj-PJ3LUpCGcvzAK9pWCIPyT3BlbkFJaLg1aeYCBHnYvN3pJnI1"
+@tool
+def get_weather(location: str):
+    """Call to get the current weather."""
+    if location.lower() in ["sf", "san francisco"]:
+        return "It's 60 degrees and foggy."
+    else:
+        return "It's 90 degrees and sunny."
 
 
 @tool
-def add(a: int, b: int) -> int:
-    '''Adds two numbers together'''  # this docstring gets used as the description
-    return a + b  # the actions our tool performs
+def get_coolest_cities():
+    """Get a list of coolest cities"""
+    return "nyc, sf"
+
+tools = [get_weather, get_coolest_cities]
+tool_node = ToolNode(tools)
+
+model_with_tools = ChatOpenAI(api_key=OPENAI_API_KEY,model_name="gpt-3.5-turbo", max_tokens=512).bind_tools(tools)
+
+def should_continue(state: MessagesState) -> Literal["tools", "__end__"]:
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls:
+        return "tools"
+    return "__end__"
 
 
-@tool
-def multiply(a: int, b: int) -> int:
-    """Multiply two numbers."""
-    return a * b
+def call_model(state: MessagesState):
+    messages = state["messages"]
+    response = model_with_tools.invoke(messages)
+    return {"messages": [response]}
 
 
-@tool
-def square(a) -> int:
-    """Calculates the square of a number."""
-    a = int(a)
-    return a * a
+workflow = StateGraph(MessagesState)
 
-@tool
-def search_api(prompt):
-    """Searches the relevant context on the web through Tavily Search API for a given prompt."""
-    tool = TavilySearchResults()
-    tool.invoke({"query": prompt})
+# Define the two nodes we will cycle between
+workflow.add_node("agent", call_model)
+workflow.add_node("tools", tool_node)
 
-
-prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", "You are a helpful assistant specialized in providing accurate and reliable tax information. You help users understand tax laws, filing procedures, deductions, credits, and other tax-related queries. Always provide clear, concise, and compliant information based on the latest Indian tax regulations. Use your tools to answer questions if needed."),
-        MessagesPlaceholder("chat_history", optional=True),
-        ("human", "{input}"),
-        MessagesPlaceholder("agent_scratchpad"),
-    ]
+workflow.add_edge("__start__", "agent")
+workflow.add_conditional_edges(
+    "agent",
+    should_continue,
 )
+workflow.add_edge("tools", "agent")
 
+app = workflow.compile()
 
-toolkit = [add, multiply, square]
+# example with a single tool call
+for chunk in app.stream(
+    {"messages": [("human", "what's the weather in sf?")]}, stream_mode="values"
+):
+    chunk["messages"][-1].pretty_print()
 
-# Choose the LLM that will drive the agent
-llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+# example with a multiple tool calls in succession
 
-# setup the toolkit
-toolkit = [add, multiply, square, search_api]
-
-# Construct the OpenAI Tools agent
-agent = create_openai_tools_agent(llm, toolkit, prompt)
-
-# Create an agent executor by passing in the agent and tools
-agent_executor = AgentExecutor(agent=agent, tools=toolkit, verbose=True)
-
-# result = agent_executor.invoke({"input": "Hello"})
-# result = agent_executor.invoke({"input": "what is 1 + 1?"})
-result = agent_executor.invoke({"input": "what is the current current weather?"})
-
-print(result['output'])
+for chunk in app.stream(
+    {"messages": [("human", "what's the weather in the coolest cities?")]},
+    stream_mode="values",
+):
+    chunk["messages"][-1].pretty_print()

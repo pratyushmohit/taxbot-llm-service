@@ -11,6 +11,7 @@ class EnvironmentVariables:
 
     # OpenAI Credentials
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
     # MongoDB Atlas credentials
     DB_URI = os.getenv("MONGO_DB_URI")

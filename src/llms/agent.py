@@ -1,7 +1,7 @@
 import logging
 import os
 
-from langchain.agents import AgentExecutor, create_openai_tools_agent
+from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.schema import AIMessage, HumanMessage
 from langchain_mongodb.chat_message_histories import MongoDBChatMessageHistory
@@ -9,6 +9,7 @@ from langchain_openai import ChatOpenAI
 
 from src.llms.toolkit import (classify, retrieve_from_vector_database,
                               search_with_tavily)
+from src.llms.llm import get_model_initializer
 from utils.env_variables import EnvironmentVariables as env
 
 system_prompts_path = os.path.join(
@@ -21,7 +22,9 @@ with open(system_prompts_path, "r") as file:
 
 class ChatAgent:
     def __init__(self) -> None:
-        self.llm = ChatOpenAI(api_key=env.OPENAI_API_KEY, model_name="gpt-3.5-turbo", max_tokens=500)
+        initializer = get_model_initializer(provider="openai", model_name="gpt-3.5-turbo")
+        initializer.initialize_model()
+        self.llm = initializer.llm
         self.prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
             ("human", "Previous chat history: {history}"),
@@ -33,7 +36,7 @@ class ChatAgent:
                         search_with_tavily]
         
         # Construct the OpenAI Tools agent
-        self.agent = create_openai_tools_agent(self.llm, self.toolkit, self.prompt)
+        self.agent = create_tool_calling_agent(llm=self.llm, tools=self.toolkit, prompt=self.prompt)
         
         # Create an agent executor by passing in the agent and tools
         self.agent_executor = AgentExecutor(agent=self.agent, tools=self.toolkit, verbose=True)

@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from app.model import ChatModel, ChatResponse
 from src.llms.agent import ChatAgent
+from src.llms.assistant import ChatAssistant
 
 # Configure root logger
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(asctime)s - %(message)s')
@@ -35,6 +36,7 @@ async def conversational_chat_agent() -> ChatResponse:
         return jsonify({"status": "Failed", "errors": e.errors()}), 400
 
     taxbot = ChatAgent()
+    # taxbot = ChatAssistant()
 
     response, chat_history = await taxbot.generate(**data.model_dump())
 
