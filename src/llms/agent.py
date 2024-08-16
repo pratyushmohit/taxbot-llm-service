@@ -22,7 +22,8 @@ with open(system_prompts_path, "r") as file:
 
 class ChatAgent:
     def __init__(self) -> None:
-        initializer = get_model_initializer(provider="openai", model_name="gpt-3.5-turbo")
+        initializer = get_model_initializer(
+            provider="openai", model_name="gpt-3.5-turbo")
         initializer.initialize_model()
         self.llm = initializer.llm
         self.prompt = ChatPromptTemplate.from_messages([
@@ -34,12 +35,14 @@ class ChatAgent:
         self.toolkit = [classify,
                         retrieve_from_vector_database,
                         search_with_tavily]
-        
+
         # Construct the OpenAI Tools agent
-        self.agent = create_tool_calling_agent(llm=self.llm, tools=self.toolkit, prompt=self.prompt)
-        
+        self.agent = create_tool_calling_agent(
+            llm=self.llm, tools=self.toolkit, prompt=self.prompt)
+
         # Create an agent executor by passing in the agent and tools
-        self.agent_executor = AgentExecutor(agent=self.agent, tools=self.toolkit, verbose=True)
+        self.agent_executor = AgentExecutor(
+            name="Onnecta Tax Assistant", agent=self.agent, tools=self.toolkit, verbose=True)
 
     async def generate(self, session_id, prompt):
 
@@ -47,14 +50,16 @@ class ChatAgent:
             connection_string=env.DB_URI,
             session_id=session_id,
             database_name=env.DB_NAME,
-            collection_name=f"session-{session_id}",
+            collection_name=session_id,
         )
 
         try:
             # Generate a response using the RunnableSequence
             response = await self.agent_executor.ainvoke({
                 "history": chat_history.messages,
-                "input": prompt
+                "input": prompt,
+                "collection_name": session_id  # Pass session_id as collection_name
+                
             })
 
             logging.info(f"Response: {response}")
@@ -62,7 +67,7 @@ class ChatAgent:
             # Add user message to chat history
             await chat_history.aadd_messages([HumanMessage(content=prompt)])
             logging.info(f"HumanMessage added to chat history.")
-            
+
             # Add AI message to chat history
             await chat_history.aadd_messages([AIMessage(content=response["output"])])
             logging.info(f"AIMessage added to chat history.")
@@ -82,7 +87,7 @@ class ChatAgent:
                     })
 
             return response["output"], serialized_messages
-        
+
         except Exception as e:
             logging.error(f"Error generating response: {e}")
             return ("An error occurred while processing your request.", [])

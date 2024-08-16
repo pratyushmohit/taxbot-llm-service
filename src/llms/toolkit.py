@@ -43,8 +43,8 @@ class ToolKit:
 
     @staticmethod
     @tool
-    async def retrieve_from_vector_database(prompt):
-        """Retrieves the relevant context from a vector database for a given prompt."""
+    async def retrieve_from_vector_database(prompt:str , collection_name: str):
+        """Retrieves the relevant context from a vector database for a given prompt from a specified collection."""
         try:
             # Define the headers and payload for the HTTP request
             headers = {
@@ -52,6 +52,7 @@ class ToolKit:
             }
             payload = {
                 "query": str(prompt),
+                "collection_name": collection_name,
                 "search_strategy": "vector-search",
                 "n_results": 5
             }
@@ -92,7 +93,7 @@ class ToolKit:
 
     @staticmethod
     @tool
-    async def search_with_tavily(prompt):
+    async def search_with_tavily(prompt: str):
         """Searches the relevant context on the web through Tavily Search API for a given prompt."""
         tool = TavilySearchResults(max_results=2)
         output = await tool.ainvoke({"query": prompt})
