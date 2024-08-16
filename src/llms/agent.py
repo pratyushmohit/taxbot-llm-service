@@ -57,9 +57,7 @@ class ChatAgent:
             # Generate a response using the RunnableSequence
             response = await self.agent_executor.ainvoke({
                 "history": chat_history.messages,
-                "input": prompt,
-                "collection_name": session_id  # Pass session_id as collection_name
-                
+                "input": prompt                
             })
 
             logging.info(f"Response: {response}")

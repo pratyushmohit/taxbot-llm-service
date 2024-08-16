@@ -52,7 +52,7 @@ class ToolKit:
             }
             payload = {
                 "query": str(prompt),
-                "collection_name": collection_name,
+                "collection_name": "test-collection",
                 "search_strategy": "vector-search",
                 "n_results": 5
             }
