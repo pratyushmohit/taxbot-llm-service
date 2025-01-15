@@ -13,11 +13,11 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(asctime)s - %(me
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-app = Flask("onnecta-llm-service")
+app = Flask("taxbot-llm-service")
 
 @app.route("/", methods=["GET"])
 def index():
-    return "Project Onnecta!"
+    return "Hi, I'm an AI-powered taxbot. How can I help you?!"
 
 
 @app.route("/status", methods=["GET"])
