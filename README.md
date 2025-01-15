@@ -1,2 +1,2 @@
-# taxbot-llm-service
-LLM Service is a backend component for the taxbot. This service leverages large language models (LLMs) to provide powerful text, image generation and natural language processing capabilities.
+# LLM Based Tax Agent with MongoDB Chat History.
+This service leverages large language models (LLMs) to provide powerful text, image generation and natural language processing capabilities.
