@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "onnecta-llm-service"
+name = "taxbot-llm-service"
 version = "0.1.0"
 description = ""
 authors = ["pratyushmohit <pratyushmohit226@gmail.com>"]
